@@ -1,1 +1,1 @@
-# link-variator-html.
+# variator-html
