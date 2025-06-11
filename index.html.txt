@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Link Variator Generator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    input, button {
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      width: 100%;
+      font-size: 1rem;
+    }
+    .link-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+    }
+    .link-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+      word-break: break-all;
+    }
+    .copy-btn {
+      margin-left: 1rem;
+      cursor: pointer;
+      color: blue;
+    }
+    .copied {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Link Variator Generator</h1>
+  <input type="text" id="baseLink" placeholder="Masukkan link asli..." />
+  <input type="number" id="linkCount" value="20" placeholder="Jumlah variasi" />
+  <button onclick="generateLinks()">Generate</button>
+  <button onclick="copyAll()">📋 Salin Semua</button>
+  <div class="link-list" id="results"></div>
+
+  <script>
+    function randomStr(length) {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
+    function generateVariations(baseLink, count) {
+      const variations = new Set();
+      while (variations.size < count) {
+        const ref = Math.floor(Math.random() * 9000) + 1000;
+        const utm = randomStr(5);
+        const session = randomStr(8);
+        const campaign = randomStr(6);
+        const separator = baseLink.includes('?') ? '&' : '?';
+        const newLink = `${baseLink}${separator}ref=${ref}&utm_source=${utm}&session_id=${session}&campaign=${campaign}`;
+        variations.add(newLink);
+      }
+      return Array.from(variations);
+    }
+
+    function generateLinks() {
+      const base = document.getElementById('baseLink').value.trim();
+      const count = parseInt(document.getElementById('linkCount').value);
+      const resultContainer = document.getElementById('results');
+      resultContainer.innerHTML = '';
+
+      if (!base || !count) return;
+
+      const links = generateVariations(base, count);
+      links.forEach((link, idx) => {
+        const div = document.createElement('div');
+        div.className = 'link-item';
+        div.innerHTML = `<span>${link}</span><span class="copy-btn" onclick="copyLink('${link}', this)">📋</span>`;
+        resultContainer.appendChild(div);
+      });
+    }
+
+    function copyLink(text, el) {
+      navigator.clipboard.writeText(text).then(() => {
+        el.textContent = '✔️';
+        setTimeout(() => (el.textContent = '📋'), 1500);
+      });
+    }
+
+    function copyAll() {
+      const links = [...document.querySelectorAll('.link-item span:first-child')].map(el => el.textContent);
+      const text = links.join('\n');
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      alert("Semua link disalin!");
+    }
+  </script>
+</body>
+</html>
